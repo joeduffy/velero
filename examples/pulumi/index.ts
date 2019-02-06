@@ -25,6 +25,8 @@ require("./prereqs");
 // Now switch on the cloud provider, and provision its specific resources.
 let settings: VeleroCloudSettings;
 switch (cloud) {
+    case "azure":
+        settings = require("./azure");
     case "gcp":
         settings = require("./gcp");
         break;
