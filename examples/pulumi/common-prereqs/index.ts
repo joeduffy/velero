@@ -30,7 +30,6 @@ const crds = [
     { name: "backupstoragelocations", kind: "BackupStorageLocation" },
     { name: "volumesnapshotlocations", kind: "VolumeSnapshotLocation" },
     { name: "serverstatusrequests", kind: "ServerStatusRequest" },
-    { name: "serverstatusrequests", kind: "ServerStatusRequest" },
 ];
 for (const crd of crds) {
     new k8s.apiextensions.v1beta1.CustomResourceDefinition(`${crd.name}.velero.io`, {
