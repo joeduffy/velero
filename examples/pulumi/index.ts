@@ -20,13 +20,17 @@ const config = new Config();
 const cloud = config.require("cloud");
 
 // First ensure that the pre-requisites are created and available at the start.
-require("./prereqs");
+require("./common-prereqs");
 
 // Now switch on the cloud provider, and provision its specific resources.
 let settings: VeleroCloudSettings;
 switch (cloud) {
+    case "aws":
+        settings = require("./aws");
+        break;
     case "azure":
         settings = require("./azure");
+        break;
     case "gcp":
         settings = require("./gcp");
         break;
