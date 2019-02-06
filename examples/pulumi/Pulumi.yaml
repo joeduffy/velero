@@ -1,0 +1,3 @@
+name: velero-pulumi
+runtime: nodejs
+description: Backup and migrate Kubernetes applications and their persistent volumes
