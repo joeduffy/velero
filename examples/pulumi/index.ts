@@ -25,6 +25,9 @@ require("./prereqs");
 // Now switch on the cloud provider, and provision its specific resources.
 let settings: VeleroCloudSettings;
 switch (cloud) {
+    case "gcp":
+        settings = require("./gcp");
+        break;
     default:
         throw new Error(`Unrecognized cloud provider '${cloud}'`);
 }
