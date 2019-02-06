@@ -18,7 +18,7 @@ import { labels, namespace, serviceAccountName } from "../common-prereqs";
 
 const provider = "azure";
 
-// Set up a backup bucket in GCP and the associated BackupStorageLocation CRD.
+// Set up a backup bucket in Azure and the associated BackupStorageLocation CRD.
 const location = "West US 2"; // TODO: make this configurable.
 const resourceGroup = new azure.core.ResourceGroup("velero", { location });
 const storageAccount = new azure.storage.Account("velero", {
@@ -32,7 +32,7 @@ const container = new azure.storage.Container("veleroBackups", {
     storageAccountName: storageAccount.name,
 })
 const backupStorageLocation = new k8s.apiextensions.CustomResource("default", {
-    apiVersion: "velero.io/v1",
+    apiVersion: "ark.heptio.com/v1",
     kind: "BackupStorageLocation",
     metadata: { namespace },
     spec: {
@@ -49,7 +49,7 @@ const backupStorageLocation = new k8s.apiextensions.CustomResource("default", {
 
 // Provision a VolumeSnapshotLocation CRD.
 const volumeSnapshotLocation = new k8s.apiextensions.CustomResource("azure-default", {
-    apiVersion: "velero.io/v1",
+    apiVersion: "ark.heptio.com/v1",
     kind: "VolumeSnapshotLocation",
     metadata: { namespace },
     spec: {

@@ -32,10 +32,16 @@ const crds = [
     { name: "serverstatusrequests", kind: "ServerStatusRequest" },
 ];
 for (const crd of crds) {
-    new k8s.apiextensions.v1beta1.CustomResourceDefinition(`${crd.name}.velero.io`, {
-        metadata: { labels },
+    // TODO: rename various "Ark" references throughout, as soon as the renamed images are available.
+    const crdGroup = "ark.heptio.com";
+    const crdQualName = `${crd.name}.${crdGroup}`;
+    new k8s.apiextensions.v1beta1.CustomResourceDefinition(crdQualName, {
+        metadata: {
+            labels,
+            name: crdQualName,
+        },
         spec: {
-            group: "velero.io",
+            group: crdGroup,
             version: "v1",
             scope: "Namespaced",
             names: {
@@ -47,8 +53,9 @@ for (const crd of crds) {
 }
 
 // Create a namespace that all subsequent objects will be provisioned within.
-export const namespace =
-    new k8s.core.v1.Namespace("velero").metadata.apply(m => m.name);
+// TODO: rename "heptio-ark" namespace to "velero" when new CLI is available.
+export const namespace = "heptio-ark";
+new k8s.core.v1.Namespace(namespace, { metadata: { name: namespace } });
 
 // Create the `velero` ServiceAccount and RBAC rules to bind it to our cluster.
 const serviceAccount = new k8s.core.v1.ServiceAccount("velero", {

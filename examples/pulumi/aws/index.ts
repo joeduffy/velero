@@ -22,7 +22,7 @@ const config = { region: aws.config.requireRegion() };
 // Set up a backup bucket in AWS and the associated BackupStorageLocation CRD.
 const bucket = new aws.s3.Bucket("velerobackups");
 const backupStorageLocation = new k8s.apiextensions.CustomResource("default", {
-    apiVersion: "velero.io/v1",
+    apiVersion: "ark.heptio.com/v1",
     kind: "BackupStorageLocation",
     metadata: { namespace },
     spec: {
@@ -36,7 +36,7 @@ const backupStorageLocation = new k8s.apiextensions.CustomResource("default", {
 
 // Provision a VolumeSnapshotLocation CRD.
 const volumeSnapshotLocation = new k8s.apiextensions.CustomResource("aws-default", {
-    apiVersion: "velero.io/v1",
+    apiVersion: "ark.heptio.com/v1",
     kind: "VolumeSnapshotLocation",
     metadata: { namespace },
     spec: {

@@ -16,6 +16,10 @@ import * as k8s from "@pulumi/kubernetes";
 import * as k8stypes from "@pulumi/kubernetes/types/input";
 import { labels, namespace, serviceAccountName } from "../common-prereqs";
 
+// The Velero conatiner image name, used below.
+// TODO: rename various "Ark" references throughout, as soon as the renamed images are available.
+const veleroContainerImage = "gcr.io/heptio-images/ark:latest";
+
 // VeleroCloudSettings defines the cloud-specific aspects of a Velero deployment. Most of
 // the configuration between clouds can be shared, however certain aspects -- like selectors,
 // volumes, and particularly credentials -- differ. This interface abstracts those away.
@@ -53,9 +57,9 @@ export function deployVeleroObjects(settings: VeleroCloudSettings) {
                     ]),
                     containers: [{
                         name: "velero",
-                        image: "gcr.io/heptio-images/velero:latest",
+                        image: veleroContainerImage,
                         ports: [{ name: "metrics", containerPort: 8085 }],
-                        command: [ "/velero" ],
+                        command: [ "/ark" ],
                         args: [
                             "server",
                             // uncomment following line and specify values if needed for multiple provider snapshot locations
@@ -66,7 +70,7 @@ export function deployVeleroObjects(settings: VeleroCloudSettings) {
                             { name: "scratch", mountPath: "/scratch" },
                         ]),
                         env: (settings.env ? settings.env : []).concat([
-                            { name: "VELERO_SCRATCH_DIR", value: "/scratch" },
+                            { name: "ARK_SCRATCH_DIR", value: "/scratch" },
                         ]),
                         envFrom: settings.envFrom,
                     }],
@@ -99,8 +103,8 @@ export function deployVeleroObjects(settings: VeleroCloudSettings) {
                     ]),
                     containers: [{
                         name: "velero",
-                        image: "gcr.io/heptio-images/velero:latest",
-                        command: [ "/velero" ],
+                        image: veleroContainerImage,
+                        command: [ "/ark" ],
                         args: [ "restic", "server" ],
                         volumeMounts: (settings.volumeMounts ? settings.volumeMounts : []).concat([
                             {
@@ -116,11 +120,11 @@ export function deployVeleroObjects(settings: VeleroCloudSettings) {
                                 valueFrom: { fieldRef: { fieldPath: "spec.nodeName" } },
                             },
                             {
-                                name: "VELERO_NAMESPACE",
+                                name: "ARK_NAMESPACE",
                                 valueFrom: { fieldRef: { fieldPath: "metadata.namespace" } },
                             },
                             {
-                                name: "VELERO_SCRATCH_DIR",
+                                name: "ARK_SCRATCH_DIR",
                                 value: "/scratch",
                             },
                         ]),
