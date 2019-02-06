@@ -12,7 +12,7 @@ please see the [Pulumi Kubernetes Setup instructions](https://pulumi.io/quicksta
 First, create a stack for your Velero deployment:
 
 ```bash
-$ pulumi stack init velero-production
+$ pulumi stack init production
 ```
 
 Next, be sure to see the relevant section below for additional steps that depend on your target cloud provider:
@@ -35,7 +35,89 @@ After that, run:
 $ pulumi up
 ```
 
-This will show a preview and then proceed to deploying all of the resources.
+This will show a preview of what action will be taken. It will look something like this:
+
+```
+$ pulumi up
+Previewing update (production):
+
+     Type                                                         Name                                    Plan
+ +   pulumi:pulumi:Stack                                          velero-pulumi-production                create
+ +   ├─ gcp:serviceAccount:Account                                velero                                  create
+ +   ├─ gcp:storage:Bucket                                        velerobackups                           create
+ +   ├─ kubernetes:ark.heptio.com:VolumeSnapshotLocation          gcp-default                             create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  restores.ark.heptio.com                 create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  backups.ark.heptio.com                  create
+ +   ├─ kubernetes:core:Namespace                                 heptio-ark                              create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  resticrepositories.ark.heptio.com       create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  serverstatusrequests.ark.heptio.com     create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  backupstoragelocations.ark.heptio.com   create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  schedules.ark.heptio.com                create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  volumesnapshotlocations.ark.heptio.com  create
+ +   ├─ kubernetes:core:ServiceAccount                            velero                                  create
+ +   ├─ gcp:projects:IAMCustomRole                                velero.server                           create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  podvolumerestores.ark.heptio.com        create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  downloadrequests.ark.heptio.com         create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  deletebackuprequests.ark.heptio.com     create
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  podvolumebackups.ark.heptio.com         create
+ +   ├─ kubernetes:ark.heptio.com:BackupStorageLocation           default                                 create
+ +   ├─ kubernetes:rbac.authorization.k8s.io:ClusterRoleBinding   velero                                  create
+ +   ├─ gcp:storage:BucketIAMBinding                              velero.server-binding                   create
+ +   ├─ gcp:serviceAccount:Key                                    velero-server-key                       create
+ +   ├─ kubernetes:core:Secret                                    cloud-credentials                       create
+ +   ├─ kubernetes:apps:Deployment                                velero                                  create
+ +   └─ kubernetes:apps:DaemonSet                                 restic                                  create
+
+Resources:
+    + 25 to create
+
+Do you want to perform this update?
+  > yes
+    no
+    details
+```
+
+After selecting `yes`, your update will proceed:
+
+```
+Updating (production):
+
+     Type                                                         Name                                    Status
+ +   pulumi:pulumi:Stack                                          velero-pulumi-production                created
+ +   ├─ kubernetes:core:Namespace                                 heptio-ark                              created
+ +   ├─ kubernetes:ark.heptio.com:VolumeSnapshotLocation          gcp-default                             created
+ +   ├─ gcp:storage:Bucket                                        velerobackups                           created
+ +   ├─ gcp:serviceAccount:Account                                velero                                  created
+ +   ├─ kubernetes:core:ServiceAccount                            velero                                  created
+ +   ├─ gcp:projects:IAMCustomRole                                velero.server                           created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  schedules.ark.heptio.com                created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  backups.ark.heptio.com                  created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  downloadrequests.ark.heptio.com         created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  deletebackuprequests.ark.heptio.com     created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  podvolumerestores.ark.heptio.com        created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  resticrepositories.ark.heptio.com       created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  podvolumebackups.ark.heptio.com         created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  restores.ark.heptio.com                 created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  serverstatusrequests.ark.heptio.com     created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  backupstoragelocations.ark.heptio.com   created
+ +   ├─ kubernetes:apiextensions.k8s.io:CustomResourceDefinition  volumesnapshotlocations.ark.heptio.com  created
+ +   ├─ kubernetes:ark.heptio.com:BackupStorageLocation           default                                 created
+ +   ├─ gcp:storage:BucketIAMBinding                              velero.server-binding                   created
+ +   ├─ kubernetes:rbac.authorization.k8s.io:ClusterRoleBinding   velero                                  created
+ +   ├─ gcp:serviceAccount:Key                                    velero-server-key                       created
+ +   ├─ kubernetes:core:Secret                                    cloud-credentials                       created
+ +   ├─ kubernetes:apps:Deployment                                velero                                  created
+ +   └─ kubernetes:apps:DaemonSet                                 restic                                  created
+
+Resources:
+    + 25 created
+
+Duration: 25s
+
+Permalink: https://app.pulumi.com/.../velero-pulumi/production/updates/1
+```
+
+After about 30 seconds, you have a fully functioning Velero installation that the `velero` CLI can interact with.
 
 ## Deploying to AWS
 
