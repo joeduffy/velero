@@ -14,6 +14,7 @@
 
 import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";
+import * as random from "@pulumi/random";
 import { labels, namespace, serviceAccountName } from "../common-prereqs";
 
 // This module provisions the necessary GCP resources for running Velero
@@ -46,12 +47,13 @@ const volumeSnapshotLocation = new k8s.apiextensions.CustomResource("gcp-default
 });
 
 // Now create a GCP service account, grant it access to the snapshots bucket defined earlier.
+const gcpRandomness = new random.RandomId("role-id", { byteLength: 4 }).hex;
 const gcpServiceAccount = new gcp.serviceAccount.Account("velero", {
-    accountId: "velero",
+    accountId: gcpRandomness.apply(id => `velero-${id}`),
     displayName: "VMWare Velero service account",
 });
 const gcpServerProjectRole = new gcp.projects.IAMCustomRole("velero.server", {
-    roleId: "velero.server",
+    roleId: gcpRandomness.apply(id => `velero.server.${id}`),
     title: "VMWare Velero Server",
     permissions: [
         "compute.disks.get",

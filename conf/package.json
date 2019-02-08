@@ -8,6 +8,7 @@
         "@pulumi/azure": "latest",
         "@pulumi/gcp": "latest",
         "@pulumi/kubernetes": "latest",
-        "@pulumi/pulumi": "latest"
+        "@pulumi/pulumi": "latest",
+        "@pulumi/random": "latest"
     }
 }

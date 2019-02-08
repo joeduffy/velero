@@ -9,7 +9,9 @@ To deploy Velero, first configure Pulumi to point at the target cluster. If `kub
 then you're ready to go -- `pulumi` picks up on that existing configuration. For additional configuration options,
 please see the [Pulumi Kubernetes Setup instructions](https://pulumi.io/quickstart/kubernetes/setup.html).
 
-First, create a stack for your Velero deployment:
+After cloning this repo, run `npm install` to install its dependencies.
+
+Next, create a stack for your Velero deployment:
 
 ```bash
 $ pulumi stack init production
