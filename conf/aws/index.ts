@@ -14,8 +14,12 @@
 
 import * as aws from "@pulumi/aws";
 import * as k8s from "@pulumi/kubernetes";
+import * as pulumi from "@pulumi/pulumi";
 import { labels, namespace, serviceAccountName } from "../common-prereqs";
 
+// This module provisions the necessary AWS resources for running Velero
+// on Amazon Web Services. This is essentially a distillation of the manual steps
+// listed at https://heptio.github.io/velero/v0.10.0/aws-config.
 const provider = "aws";
 const config = { region: aws.config.requireRegion() };
 
@@ -77,12 +81,68 @@ const kube2IAMDeployment = new k8s.apps.v1beta1.Deployment("velero", {
     }
 });
 
+// Create an AWS IAM user and attach policies to give Velero the necessary permissions.
+const awsVeleroUser = new aws.iam.User("velero");
+const awsVeleroUserPolicy = new aws.iam.UserPolicy("velero-policy", {
+    user: awsVeleroUser.id,
+    policy: bucket.arn.apply(bucketArn => JSON.stringify({
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:DescribeVolumes",
+                    "ec2:DescribeSnapshots",
+                    "ec2:CreateTags",
+                    "ec2:CreateVolume",
+                    "ec2:CreateSnapshot",
+                    "ec2:DeleteSnapshot"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject",
+                    "s3:DeleteObject",
+                    "s3:PutObject",
+                    "s3:AbortMultipartUpload",
+                    "s3:ListMultipartUploadParts"
+                ],
+                "Resource": [ bucketArn ],
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "s3:ListBucket"
+                ],
+                "Resource": [ bucketArn ],
+            }
+        ]
+    })),
+});
+
+// Now create an access key for the AWS IAM user and store it in a Kubernetes Secret.
+const awsVeleroUserKey = new aws.iam.AccessKey("velero-key", {
+    user: awsVeleroUser.id,
+}, { dependsOn: awsVeleroUserPolicy });
+const awsCredentialsSecret = new k8s.core.v1.Secret("cloud-credentials", {
+    metadata: { namespace },
+    stringData: {
+        "cloud": pulumi.all([awsVeleroUserKey.id, awsVeleroUserKey.secret]).
+            apply(([id, secret]) => `[default]\naws_access_key_id=${id}\naws_secret_access_key=${secret}`),
+    },
+});
+
 // Finally, export an object that customizes the various tags and mounts for GCP.
 module.exports = {
     env: [
         { name: "AWS_SHARED_CREDENTIALS_FILE", value: "/credentials/cloud" },
         // { name: "AWS_CLUSTER_NAME", value: "<YOUR_CLUSTER_NAME>" },
     ],
-    volumes: [{ name: "cloud-credentials", secret: { secretName: "cloud-credentials" } }],
+    volumes: [{
+        name: "cloud-credentials",
+        secret: { secretName: awsCredentialsSecret.metadata.apply(m => m.name) },
+    }],
     volumeMounts: [{ name: "cloud-credentials", mountPath: "/credentials" }],
 };

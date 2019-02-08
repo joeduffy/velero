@@ -16,11 +16,14 @@ import * as azure from "@pulumi/azure";
 import * as k8s from "@pulumi/kubernetes";
 import { labels, namespace, serviceAccountName } from "../common-prereqs";
 
+// This module provisions the necessary Azure resources for running Velero
+// on Microsoft Azure. This is essentially a distillation of the manual steps
+// listed at https://heptio.github.io/velero/v0.10.0/azure-config.
 const provider = "azure";
 
 // Set up a backup bucket in Azure and the associated BackupStorageLocation CRD.
 const location = "West US 2"; // TODO: make this configurable.
-const resourceGroup = new azure.core.ResourceGroup("velero", { location });
+const resourceGroup = new azure.core.ResourceGroup("velero", { location }); // TODO: make this configurable.
 const storageAccount = new azure.storage.Account("velero", {
     location: resourceGroup.location,
     resourceGroupName: resourceGroup.name,
